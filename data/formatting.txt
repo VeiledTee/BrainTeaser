@@ -1,0 +1,54 @@
+SENTENCE PROBLEM
+Train format:
+{
+	'id': 'SP-0', 
+	'question': 'Mr. and Mrs. Mustard have six daughters and each daughter has one brother. But there are only 9 people in the family, how is that possible?', 
+	'answer': 'Each daughter shares the same brother.', 
+	'distractor1': 'Some daughters get married and have their own family.', 
+	'distractor2': 'Some brothers were not loved by family and moved away.', 
+	'distractor(unsure)': 'None of above.', 
+	'label': 1, 
+	'choice_list': [
+		'Some daughters get married and have their own family.', 
+		'Each daughter shares the same brother.', 
+		'Some brothers were not loved by family and moved away.', 
+		'None of above.'
+	], 
+	'choice_order': [1, 0, 2, 3]
+}
+
+Eval format:
+{
+	'question': 'Everyone called him "Batman," but he knew nothing about bats and thought they were disgusting. He still cherished being referred to as Batman! How is this possible?', 
+	'choice_list': [
+		'He tries to be friendly.', 
+		'He is afraid others will laugh at him.', 
+		'He was the star baseball player.', 
+		'None of above.'
+	]
+}
+
+WORD PROBLEM
+Train format:
+{
+	'id': 'WP-0', 
+	'question': 'How do you spell COW in thirteen letters?', 
+	'answer': 'SEE O DOUBLE YOU.', 
+	'distractor1': 'COWCOWCOWCOWW', 
+	'distractor2': 'SEE OH DEREFORD', 
+	'distractor(unsure)': 'None of above.', 
+	'label': 1, 
+	'choice_list': [
+		'SEE OH DEREFORD', 
+		'SEE O DOUBLE YOU.', 
+		'COWCOWCOWCOWW', 
+		'None of above.'
+	], 
+	'choice_order': [2, 0, 1, 3]
+}
+
+Eval format:
+{
+	'question': 'What kind of nut has no shell?', 
+	'choice_list': ['A peanut.', 'A Doughnut.', 'A walnut.', 'None of above.']
+}
