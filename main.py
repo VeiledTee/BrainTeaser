@@ -9,26 +9,10 @@ from tqdm import tqdm
 # model = LlamaForCausalLM.from_pretrained(model_path, device_map="auto")
 # tokenizer = AutoTokenizer.from_pretrained(model_path)
 
-# HumanEval helper
-
-def generate_one_completion(prompt: str):
-    tokenizer.pad_token = tokenizer.eos_token
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=4096)
-
-    # Generate
-    generate_ids = model.generate(inputs.input_ids.to("cuda"), max_new_tokens=384, do_sample=True, top_p=0.75, top_k=40, temperature=0.1)
-    completion = tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-    completion = completion.replace(prompt, "").split("\n\n\n")[0]
-
-    return completion
-
-
-# run `evaluate_functional_correctness samples.jsonl` in your HumanEval code sandbox
-
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
 
-model_name = 'roberta-large'
-
+model_name: str = 'roberta-large'
+# model_name: str = 'Phind/Phind-CodeLlama-34B-v2'
 
 def answer_MCQ(prompt: str, options: list[str]) -> str:
     nlp = pipeline('question-answering', model=model_name, tokenizer=model_name)
