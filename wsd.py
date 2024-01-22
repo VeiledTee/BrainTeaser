@@ -51,9 +51,11 @@ from nltk.corpus import wordnet
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
 
+
 def get_word_senses(word):
     # Get all synsets (word senses) for the given word from WordNet
     return wordnet.synsets(word)
+
 
 def rank_word_senses(sentence, word):
     senses = get_word_senses(word)
@@ -72,12 +74,15 @@ def rank_word_senses(sentence, word):
             word_scores[sense] += similarity_score
 
     # Sort word senses by score in descending order
-    ranked_senses = sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
-    return ranked_senses
+    ranked_sense = sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
+    return ranked_sense
+
+# ewiser
+# ARES
 
 # Example sentence and word to disambiguate
 sentence = "He caught a big fish."
-target_word = "caught"
+target_word = "big"
 
 ranked_senses = rank_word_senses(sentence, target_word)
 
@@ -85,4 +90,3 @@ ranked_senses = rank_word_senses(sentence, target_word)
 print(f"Ranked senses for the word '{target_word}' in the sentence: {sentence}")
 for sense, score in ranked_senses:
     print(f"\tScore - {score:.6f} | {sense.definition()}")
-''
