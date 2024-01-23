@@ -26,30 +26,34 @@ def find_most_similar_sense(target_embedding, sense_embeddings):
     return most_similar_index
 
 
-# Load sense embeddings from the file
-sense_embeddings = {}
-with open('data/sensembert_EN_kb.txt', 'r', encoding='utf-8') as file:
-    for line_num, line in enumerate(file):
-        if line_num > 0:
-            parts = line.strip().split('%')
-            sense = parts[0].strip()
-            embeddings = parts[1].split(":: ")
-            embedding_values = [float(value) for value in embeddings[1].split()]
-            sense_embeddings[sense] = embedding_values
-            print(sense)
+# # Load sense embeddings from the file
+# sense_embeddings = {}
+# with open('data/sensembert_EN_kb.txt', 'r', encoding='utf-8') as file:
+#     for line_num, line in enumerate(file):
+#         if line_num > 0:
+#             parts = line.strip().split('%')
+#             sense = parts[0].strip()
+#             embeddings = parts[1].split(":: ")
+#             embedding_values = [float(value) for value in embeddings[1].split()]
+#             sense_embeddings[sense] = embedding_values
+#             print(sense)
 
-# Save sense_embeddings to a JSON file
-with open('data/sense_embeddings.json', 'w', encoding='utf-8') as json_file:
-    json.dump(sense_embeddings, json_file)
+# # Save sense_embeddings to a JSON file
+# with open('data/sense_embeddings.json', 'w', encoding='utf-8') as json_file:
+#     json.dump(sense_embeddings, json_file)
+#
+# print("embeddings saved")
 
 # Load sense embeddings from the JSON file
 with open('data/sense_embeddings.json', 'r', encoding='utf-8') as json_file:
     sense_embeddings = json.load(json_file)
 
+print("embeddings loaded")
+
 # Example usage
-context_token = "example"  # Replace with your actual token in context
+context_token = "wonder"  # Replace with your actual token in context
 target_embedding = get_bert_embedding(context_token)
-target_embedding = torch.cat([target_embedding, target_embedding]).numpy()
+target_embedding = torch.cat([torch.tensor(target_embedding), torch.tensor(target_embedding)]).numpy()
 
 most_similar_sense = find_most_similar_sense(target_embedding, list(sense_embeddings.values()))
 print("Most similar sense:", list(sense_embeddings.keys())[most_similar_sense])
