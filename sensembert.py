@@ -1,59 +1,57 @@
+import nltk
+from nltk.corpus import wordnet
 import torch
-from transformers import BertModel, BertTokenizer
-from scipy.spatial.distance import cosine
-import json
+from transformers import BertTokenizer, BertModel
+from POSTagging import SimplePOSTagger
 
 
-# Load BERT model and tokenizer
-model_name = 'bert-large-cased'
-tokenizer = BertTokenizer.from_pretrained(model_name)
-bert_model = BertModel.from_pretrained(model_name)
-bert_model.eval()
+def get_senses_of_lemma(lemma):
+    lemma_senses = []
+    for curr_sense in wordnet.synsets(lemma, pos='n'):
+        lemma_senses += [curr_sense.lemmas()[0].key()]
+        print(lemma_senses[-1])
+    return lemma_senses
 
 
-# Function to get BERT embeddings for a token
-def get_bert_embedding(token):
-    inputs = tokenizer(token, return_tensors="pt")
-    with torch.no_grad():
-        outputs = bert_model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+class BrainTeaserWSD:
+    def __init__(self, bert_model: str = 'bert-large-cased'):
+        self.model = BertModel.from_pretrained(bert_model)
+        self.tokenizer = BertTokenizer.from_pretrained(bert_model)
+
+    def get_bert_token_embedding(self, text, device='cpu'):
+        marked_text = "[CLS] " + text.replace('<b>', '').replace('</b>', '') + " [SEP]"
+        tokenized_text = self.tokenizer.tokenize(marked_text)[:512]
+        indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)[:512]
+
+        tokens_tensor = torch.tensor([indexed_tokens]).to(device)
+
+        with torch.no_grad():
+            outputs = self.model(tokens_tensor)
+            hidden_states = outputs[2]
+            word_embeddings = torch.stack(hidden_states[-4:]).sum(0)[0]
+
+        num_parts = 0.0
+        target_token_embedding = None
+
+        for token_index in self.findTargetInBertTokeinzedText(tokenized_text):
+            num_parts += 1.0
+            target_token_embedding = target_token_embedding + word_embeddings[token_index] if target_token_embedding else word_embeddings[token_index]
+
+        token_embedding = target_token_embedding / num_parts if target_token_embedding else None
+
+        return token_embedding
+
+    def pos_tag_text(self, text: str) -> str:
+
+        return ''
 
 
-# Function to find the most similar sense embedding
-def find_most_similar_sense(target_embedding, sense_embeddings):
-    similarities = [1 - cosine(target_embedding, sense_embedding) for sense_embedding in sense_embeddings]
-    most_similar_index = similarities.index(max(similarities))
-    return most_similar_index
 
 
-# # Load sense embeddings from the file
-# sense_embeddings = {}
-# with open('data/sensembert_EN_kb.txt', 'r', encoding='utf-8') as file:
-#     for line_num, line in enumerate(file):
-#         if line_num > 0:
-#             parts = line.strip().split('%')
-#             sense = parts[0].strip()
-#             embeddings = parts[1].split(":: ")
-#             embedding_values = [float(value) for value in embeddings[1].split()]
-#             sense_embeddings[sense] = embedding_values
-#             print(sense)
 
-# # Save sense_embeddings to a JSON file
-# with open('data/sense_embeddings.json', 'w', encoding='utf-8') as json_file:
-#     json.dump(sense_embeddings, json_file)
-#
-# print("embeddings saved")
+# # Print information about the synset
+# print("Word:", synset.name().split('.')[0])
+# print("Part of Speech:", synset.pos())
+# print("Definition:", synset.definition())
 
-# Load sense embeddings from the JSON file
-with open('data/sense_embeddings.json', 'r', encoding='utf-8') as json_file:
-    sense_embeddings = json.load(json_file)
-
-print("embeddings loaded")
-
-# Example usage
-context_token = "wonder"  # Replace with your actual token in context
-target_embedding = get_bert_embedding(context_token)
-target_embedding = torch.cat([torch.tensor(target_embedding), torch.tensor(target_embedding)]).numpy()
-
-most_similar_sense = find_most_similar_sense(target_embedding, list(sense_embeddings.values()))
-print("Most similar sense:", list(sense_embeddings.keys())[most_similar_sense])
+get_senses_of_lemma("father")
