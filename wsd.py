@@ -68,14 +68,20 @@ def rank_word_senses(sentence, word):
     for sense in senses:
         for token in tokens:
             # Calculate the similarity of the token to each word sense
-            similarity_score = max([sense.path_similarity(wordnet.synsets(token)[0])
-                                    for syn in wordnet.synsets(token)
-                                    if wordnet.synsets(token)], default=0)
+            similarity_score = max(
+                [
+                    sense.path_similarity(wordnet.synsets(token)[0])
+                    for syn in wordnet.synsets(token)
+                    if wordnet.synsets(token)
+                ],
+                default=0,
+            )
             word_scores[sense] += similarity_score
 
     # Sort word senses by score in descending order
     ranked_sense = sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
     return ranked_sense
+
 
 # ewiser
 # ARES

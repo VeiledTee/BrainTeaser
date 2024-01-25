@@ -7,19 +7,19 @@ from POSTagging import SimplePOSTagger
 
 def get_senses_of_lemma(lemma):
     lemma_senses = []
-    for curr_sense in wordnet.synsets(lemma, pos='n'):
+    for curr_sense in wordnet.synsets(lemma, pos="n"):
         lemma_senses += [curr_sense.lemmas()[0].key()]
         print(lemma_senses[-1])
     return lemma_senses
 
 
 class BrainTeaserWSD:
-    def __init__(self, bert_model: str = 'bert-large-cased'):
+    def __init__(self, bert_model: str = "bert-large-cased"):
         self.model = BertModel.from_pretrained(bert_model)
         self.tokenizer = BertTokenizer.from_pretrained(bert_model)
 
-    def get_bert_token_embedding(self, text, device='cpu'):
-        marked_text = "[CLS] " + text.replace('<b>', '').replace('</b>', '') + " [SEP]"
+    def get_bert_token_embedding(self, text, device="cpu"):
+        marked_text = "[CLS] " + text.replace("<b>", "").replace("</b>", "") + " [SEP]"
         tokenized_text = self.tokenizer.tokenize(marked_text)[:512]
         indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)[:512]
 
@@ -35,18 +35,20 @@ class BrainTeaserWSD:
 
         for token_index in self.findTargetInBertTokeinzedText(tokenized_text):
             num_parts += 1.0
-            target_token_embedding = target_token_embedding + word_embeddings[token_index] if target_token_embedding else word_embeddings[token_index]
+            target_token_embedding = (
+                target_token_embedding + word_embeddings[token_index]
+                if target_token_embedding
+                else word_embeddings[token_index]
+            )
 
-        token_embedding = target_token_embedding / num_parts if target_token_embedding else None
+        token_embedding = (
+            target_token_embedding / num_parts if target_token_embedding else None
+        )
 
         return token_embedding
 
     def pos_tag_text(self, text: str) -> str:
-
-        return ''
-
-
-
+        return ""
 
 
 # # Print information about the synset
