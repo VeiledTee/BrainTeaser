@@ -468,12 +468,12 @@ if __name__ == "__main__":
     predictedSense = myPersonalizedModel.predictSense(example_sent, example_lemma)
     print("original senseEmbert prediction: ", predictedSense)
 
-    example_authorID = "1476382.male.33.Publishing.Gemini.json"
-    example_topX = 3
-    authorPredomPredictedSense = myPersonalizedModel.predictSenseUsingAuthorPredomSense(
-        example_sent, example_lemma, example_authorID, example_topX
-    )
-    print(
-        "prediction using author's predominant sense with senseEmbert: ",
-        authorPredomPredictedSense,
-    )
+    # example_authorID = "1476382.male.33.Publishing.Gemini.json"
+    # example_topX = 3
+    # authorPredomPredictedSense = myPersonalizedModel.predictSenseUsingAuthorPredomSense(
+    #     example_sent, example_lemma, example_authorID, example_topX
+    # )
+    # print(
+    #     "prediction using author's predominant sense with senseEmbert: ",
+    #     authorPredomPredictedSense,
+    # )
