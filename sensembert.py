@@ -1,6 +1,7 @@
 import json
 
 import nltk
+import numpy as np
 from nltk.corpus import wordnet
 import torch
 from transformers import BertTokenizer, BertModel
@@ -85,6 +86,7 @@ class BrainTeaserWSD:
 
                 # Add or update the dictionary with new data
                 sense_embeddings[sense_label] = embedding
+                print(sense_label, len(embedding))
 
         # Save the sense embeddings to the JSON file
         with open(json_save_file, "w") as json_file:
@@ -99,42 +101,6 @@ class BrainTeaserWSD:
         targetPos = [i for i, token in enumerate(tokenized_text) if
                      (numChars := numChars + len(token.replace("##", ""))) >= non_white_chars_count]
         return targetPos
-
-    def get_bert_token_embedding(self, text):
-        if torch.cuda.is_available():
-            device = torch.device("cuda")
-        else:
-            device = torch.device("cpu")
-
-        num_non_white = sum(1 for c in text[:text.find("<b>") + 1] if c != " ")
-        marked_text = "[CLS] " + text.replace("<b>", "").replace("</b>", "") + " [SEP]"
-
-        tokenized_text = self.tokenizer.tokenize(marked_text)[:512]
-        indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)[:512]
-
-        tokens_tensor = torch.tensor([indexed_tokens]).to(device)
-
-        with torch.no_grad():
-            outputs = self.model(tokens_tensor)
-            hidden_states = outputs[2]
-            word_embeddings = torch.stack(hidden_states[-4:]).sum(0)[0]
-
-        num_parts = 0.0
-        target_token_embedding = None
-
-        for token_index in self.find_target_in_bert_tokeinzed_text(tokenized_text, num_non_white):
-            num_parts += 1.0
-            target_token_embedding = (
-                target_token_embedding + word_embeddings[token_index]
-                if target_token_embedding
-                else word_embeddings[token_index]
-            )
-
-        token_embedding = (
-            target_token_embedding / num_parts if target_token_embedding else None
-        )
-
-        return token_embedding
 
     def find_similar_senses(self, token_embedding_in, sense_embeddings, lemma, top_k=1):
         tokenEmbedding = copy.deepcopy(token_embedding_in)
@@ -161,18 +127,40 @@ class BrainTeaserWSD:
 
         return top_k_senses
 
+    def get_bert_token_embedding(self, text, target_token) -> np.ndarray:
+        # Tokenize the sentence
+        tokenized_text = self.tokenizer.tokenize(self.tokenizer.decode(self.tokenizer.encode(text)))
+
+        # Find the indices of the target token
+        target_token_indices = [i for i, token in enumerate(tokenized_text) if token == target_token]
+
+        # Convert tokens to tensor
+        tokens_tensor = torch.tensor([self.tokenizer.convert_tokens_to_ids(tokenized_text)])
+
+        # Get the BERT embeddings for the entire sentence
+        with torch.no_grad():
+            outputs = self.model(tokens_tensor)
+
+        # Retrieve the embeddings for all occurrences of the target token from the last layer
+        target_embeddings = [outputs.last_hidden_state[0, index].numpy() for index in target_token_indices]
+
+        # Calculate the average embedding
+        average_embedding = np.mean(target_embeddings, axis=0)
+
+        return average_embedding
+
     def predict_sense(self, text, lemma, k):
-        target_token_embedding = self.get_bert_token_embedding(text)
+        target_token_embedding = self.get_bert_token_embedding(text, lemma)
         formated_target_embedding = torch.cat(
-            (target_token_embedding, target_token_embedding), dim=0
+            (torch.tensor(target_token_embedding), torch.tensor(target_token_embedding)), dim=0
         )
         # print(len(target_token_embedding))
 
-        mostSimilarSense, mostSimilarSenseVal = self.find_similar_senses(
+        most_similar_senses = self.find_similar_senses(
             formated_target_embedding, self.sense_embeddings, lemma, k
         )
-        predictedSense = mostSimilarSense
-        return predictedSense
+        return most_similar_senses
+
 
     def pos_tag_text(self, text: str) -> str:
         a = self.model
@@ -182,6 +170,7 @@ class BrainTeaserWSD:
 if __name__ == '__main__':
     wsd_model = BrainTeaserWSD()
     wsd_model.convert_SenseEmBERT_text_to_json('data/sensembert_EN_kb.txt', 'data/sensembert_EN_kb.json')
+    wsd_model.load_sense_embeddings('data/sensembert_EN_kb.json')
     example_text = "this is an example sentence"
     example_lemma = 'sentence'
     print(wsd_model.predict_sense(example_text, example_lemma, 3))

@@ -1,47 +1,32 @@
+import torch
+from transformers import BertTokenizer, BertModel
 import numpy as np
 
-from transformers import AutoTokenizer, LlamaForCausalLM
-from tqdm import tqdm
+# Load BERT model and tokenizer
+model_name = 'bert-large-cased'
+tokenizer = BertTokenizer.from_pretrained(model_name)
+model = BertModel.from_pretrained(model_name)
 
-# initialize the model
+# Input sentence
+sentence = "He's activated the mainframe"
+target_token = "activated"
 
-# model_path = "Phind/Phind-CodeLlama-34B-v2"
-# model = LlamaForCausalLM.from_pretrained(model_path, device_map="auto")
-# tokenizer = AutoTokenizer.from_pretrained(model_path)
+# Tokenize the sentence
+tokenized_text = tokenizer.tokenize(tokenizer.decode(tokenizer.encode(sentence)))
 
-from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
+# Find the indices of the target token
+target_token_indices = [i for i, token in enumerate(tokenized_text) if token == target_token]
 
-model_name: str = "roberta-large"
-# model_name: str = 'Phind/Phind-CodeLlama-34B-v2'
+# Convert tokens to tensor
+tokens_tensor = torch.tensor([tokenizer.convert_tokens_to_ids(tokenized_text)])
 
+# Get the BERT embeddings for the entire sentence
+with torch.no_grad():
+    outputs = model(tokens_tensor)
 
-def answer_MCQ(prompt: str, options: list[str]) -> str:
-    nlp = pipeline("question-answering", model=model_name, tokenizer=model_name)
-    QA_context: str = "\n".join(options)
-    QA_input = {
-        "question": prompt,
-        "context": f"Choose one of the following: {QA_context}",
-    }
-    res = nlp(QA_input)
-    return res
+# Retrieve the embeddings for all occurrences of the target token from the last layer
+target_embeddings = [outputs.last_hidden_state[0, index].numpy() for index in target_token_indices]
 
-
-if __name__ == "__main__":
-    data = np.load("data/WP-train.npy", allow_pickle=True)
-    for i, d in enumerate(data):
-        if i < 3:
-            test_prompt: str = (
-                f"Answer the following brainteaser. Only choose one of the answers listed:"
-                f"Question: {data[i]['question']}"
-            )  # f"Answers: {data[i]['choice_list']}"
-            # print(data[0]['question'])
-            # print('\n'.join(data[0]['choice_list']))
-            # data = np.load('data/WP_eval_data_for_practice.npy', allow_pickle=True)
-            # print(data[0])
-            # print(generate_one_completion())
-            answer: str = answer_MCQ(prompt=test_prompt, options=data[i]["choice_list"])
-            print(
-                f"Q: {data[i]['question']}\nOptions: {data[i]['choice_list']}\nCorrect: {data[i]['answer']}\nA: {answer['answer'].strip()}\n====="
-            )
-        else:
-            break
+# Calculate the average embedding
+average_embedding = np.mean(target_embeddings, axis=0)
+print(average_embedding.shape)
