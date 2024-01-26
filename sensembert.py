@@ -165,12 +165,3 @@ class BrainTeaserWSD:
     def pos_tag_text(self, text: str) -> str:
         a = self.model
         return ""
-
-
-if __name__ == '__main__':
-    wsd_model = BrainTeaserWSD()
-    wsd_model.convert_SenseEmBERT_text_to_json('data/sensembert_EN_kb.txt', 'data/sensembert_EN_kb.json')
-    wsd_model.load_sense_embeddings('data/sensembert_EN_kb.json')
-    example_text = "this is an example sentence"
-    example_lemma = 'sentence'
-    print(wsd_model.predict_sense(example_text, example_lemma, 3))

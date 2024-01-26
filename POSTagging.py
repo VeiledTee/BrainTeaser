@@ -37,3 +37,7 @@ class SimplePOSTagger:
         ]
 
         return potential_objects
+
+
+if __name__ == '__mian__':
+    pos = SimplePOSTagger()
