@@ -128,26 +128,36 @@ class BrainTeaserWSD:
         return top_k_senses
 
     def get_bert_token_embedding(self, text, target_token) -> np.ndarray:
-        # Tokenize the sentence
-        tokenized_text = self.tokenizer.tokenize(self.tokenizer.decode(self.tokenizer.encode(text)))
+        sentence_tokens = self.tokenizer.tokenize(self.tokenizer.decode(self.tokenizer.encode(text)))
+        target_tokens = self.tokenizer.tokenize(self.tokenizer.decode(self.tokenizer.encode(target_token)))
 
-        # Find the indices of the target token
-        target_token_indices = [i for i, token in enumerate(tokenized_text) if token == target_token]
+        tokens_to_remove = {'[CLS]', '[SEP]'}
+        target_tokens = [token for token in target_tokens if token not in tokens_to_remove]
 
-        # Convert tokens to tensor
-        tokens_tensor = torch.tensor([self.tokenizer.convert_tokens_to_ids(tokenized_text)])
+        # Convert tokens to input IDs
+        input_ids = self.tokenizer.encode(text, return_tensors='pt')
 
-        # Get the BERT embeddings for the entire sentence
+        # Get the model's output
         with torch.no_grad():
-            outputs = self.model(tokens_tensor)
+            outputs = self.model(input_ids)
 
-        # Retrieve the embeddings for all occurrences of the target token from the last layer
-        target_embeddings = [outputs.last_hidden_state[0, index].numpy() for index in target_token_indices]
+        # Retrieve embeddings for each subtoken
+        hidden_states = outputs.last_hidden_state
+        subtoken_embeddings = hidden_states[0]
 
-        # Calculate the average embedding
-        average_embedding = np.mean(target_embeddings, axis=0)
+        mask = [False] * len(sentence_tokens)
 
-        return average_embedding
+        # Slide a window over the larger list
+        window_size = len(target_tokens)
+        for i in range(len(sentence_tokens) - window_size + 1):
+            window_tokens = sentence_tokens[i:i + window_size]
+            if window_tokens == target_tokens:
+                # If the window matches the smaller list, set the mask to True for those tokens
+                mask[i:i + window_size] = [True] * window_size
+
+        # Calculate the mean subtoken embeddings for tokens related to the target_token
+        token_embedding = torch.mean(subtoken_embeddings[mask], dim=0)
+        return token_embedding
 
     def predict_sense(self, text, lemma, k):
         target_token_embedding = self.get_bert_token_embedding(text, lemma)
