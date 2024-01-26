@@ -24,20 +24,20 @@ class SimplePOSTagger:
         # Perform POS tagging
         pos_tags = self.stanford_tagger.tag(tokens)
 
-        # Print the POS tags
-        for word, pos_tag in pos_tags:
-            print(f"{word}: {pos_tag}")
+        return pos_tags
 
-    def filter_objects(self, tagged_sentence):
+    def filter_objects(self, sentence):
+        tagged_sentence = self.tag_sentence(sentence)
         # Identify potential objects based on nouns (NN, NNS, NNP, NNPS) and verbs (VB, VBD, VBG, VBN, VBP, VBZ)
         potential_objects = [
             word
             for word, pos in tagged_sentence
-            if pos.startswith("NN") or pos.startswith("VB")
+            if pos.startswith("NN")
         ]
 
         return potential_objects
 
 
-if __name__ == '__mian__':
+if __name__ == '__main__':
     pos = SimplePOSTagger()
+    print(pos.filter_objects("Mr. and Mrs. Mustard have six daughters and each daughter has one brother. But there are only 9 people in the family, how is that possible?"))
