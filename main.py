@@ -2,8 +2,8 @@ from transformers import BertTokenizer, BertModel
 import torch
 
 # Load pre-trained BERT model and tokenizer
-tokenizer = BertTokenizer.from_pretrained('bert-large-cased')
-model = BertModel.from_pretrained('bert-large-cased')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertModel.from_pretrained('bert-base-uncased')
 
 # Tokenize input text
 text = "Mr. and Mrs. Mustard have six daughters and each daughter has one brother. But there are only 9 people in the family, how is that possible?"
@@ -44,3 +44,5 @@ def get_target_embeddings(text, target_token):
     print("Token Embedding:", token_embedding.numpy().shape)
 
 get_target_embeddings("Mr. and Mrs. Mustard have six daughters and each daughter has one brother. But there are only 9 people in the family, how is that possible?", "Mustard")
+
+
