@@ -1,4 +1,4 @@
-from nltk.corpus import wordnet
+from nltk.corpus import wordnet as wn
 
 from sensembert import BrainTeaserWSD
 
@@ -9,7 +9,7 @@ def get_wordnet_sense(identifier):
 
     # Get the synset using the parsed components
     try:
-        synset = wordnet.lemma_from_key(parts[1]).synset()
+        synset = wn.synset_from_sense_key(identifier).definition()
         return synset
     except Exception as e:
         print(f"Error: {e}")
