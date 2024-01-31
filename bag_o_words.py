@@ -40,19 +40,6 @@ def calculate_avg_overlap(bag1, bag2):
     return avg_overlap
 
 
-def get_bert_embeddings(text, model, tokenizer):
-    tokens = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-    with torch.no_grad():
-        outputs = model(**tokens)
-    return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
-
-
-def calculate_cosine_similarity(embedding1, embedding2):
-    embedding1 = embedding1.reshape(1, -1)
-    embedding2 = embedding2.reshape(1, -1)
-    return cosine_similarity(embedding1, embedding2)[0][0]
-
-
 if __name__ == '__main__':
     # dataset = load_dataset('data/SP_new_test.npy')
     # save_file = 'data/answer_sen.txt'
