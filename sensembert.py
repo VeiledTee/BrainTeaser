@@ -27,7 +27,6 @@ class BrainTeaserWSD:
         lemma_senses = []
         for curr_sense in wordnet.synsets(lemma, pos="n"):
             lemma_senses += [curr_sense.lemmas()[0].key()]
-            print(lemma_senses[-1])
         return lemma_senses
 
     def load_SenseEmBERT_embeddings_text(self, file_path):
@@ -86,7 +85,6 @@ class BrainTeaserWSD:
 
                 # Add or update the dictionary with new data
                 sense_embeddings[sense_label] = embedding
-                print(sense_label, len(embedding))
 
         # Save the sense embeddings to the JSON file
         with open(json_save_file, "w") as json_file:
@@ -121,9 +119,6 @@ class BrainTeaserWSD:
 
         # Get the top k senses using nlargest
         top_k_senses = nlargest(top_k, top_k_senses, key=lambda x: x[1])
-
-        if not top_k_senses:
-            print("No similar senses found")
 
         return top_k_senses
 
@@ -164,7 +159,6 @@ class BrainTeaserWSD:
         formated_target_embedding = torch.cat(
             (torch.tensor(target_token_embedding), torch.tensor(target_token_embedding)), dim=0
         )
-        # print(len(target_token_embedding))
 
         most_similar_senses = self.find_similar_senses(
             formated_target_embedding, self.sense_embeddings, lemma, k

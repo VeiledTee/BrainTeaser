@@ -32,7 +32,7 @@ class SimplePOSTagger:
         potential_objects = [
             word
             for word, pos in tagged_sentence
-            if pos.startswith("NN")
+            if pos.startswith("NN") or pos.startswith("V")
         ]
 
         return potential_objects

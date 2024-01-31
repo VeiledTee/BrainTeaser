@@ -4,9 +4,6 @@ from sensembert import BrainTeaserWSD
 
 
 def get_wordnet_sense(identifier):
-    # Split the identifier into its components
-    parts = identifier.split('%')
-
     # Get the synset using the parsed components
     try:
         synset = wn.synset_from_sense_key(identifier).definition()
