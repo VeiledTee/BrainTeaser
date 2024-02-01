@@ -1,16 +1,11 @@
-import nltk
-import numpy as np
 import torch
 from nltk.corpus import stopwords
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import BertTokenizer, BertModel
 
-import wsd
 from POSTagging import SimplePOSTagger
 from dataset_tomfoolery import load_dataset
 from sensembert import BrainTeaserWSD
-from nltk.corpus import stopwords
-
 
 # set of English stop words
 stop_words = set(stopwords.words('english'))
@@ -63,10 +58,10 @@ def get_sense_embeddings(text, lemmatizer, wsd_model, model, tokenizer):
 
 
 if __name__ == '__main__':
-    dataset = load_dataset('data/SP_new_test.npy')
-    save_file = 'data/answer_sen.txt'
-    # dataset = load_dataset('data/WP_new_test.npy')
-    # save_file = 'data/answer_word.txt'
+    # dataset = load_dataset('data/SP_new_test.npy')
+    # save_file = 'data/answer_sen.txt'
+    dataset = load_dataset('data/WP_new_test.npy')
+    save_file = 'data/answer_word.txt'
 
     wsd_comparison = BrainTeaserWSD()
     pos_comparison = SimplePOSTagger()
@@ -101,4 +96,7 @@ if __name__ == '__main__':
                     max_comparison_score = comparison_score
                     max_comparison_index = j
 
-            file.write(str(max_comparison_index) + '\n')
+            if i+1 < len(dataset):
+                file.write(str(max_comparison_index) + '\n')
+            else:
+                file.write(str(max_comparison_index))
