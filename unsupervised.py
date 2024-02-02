@@ -5,8 +5,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from dataset_tomfoolery import load_dataset
 
 
-sentence_test = load_dataset('data/SP_new_test.npy')
-word_test = load_dataset('data/WP_new_test.npy')
+sentence_test = load_dataset("data/SP_new_test.npy")
+word_test = load_dataset("data/WP_new_test.npy")
 
 
 def get_bert_embeddings(text, model, tokenizer):
@@ -22,15 +22,15 @@ def calculate_cosine_similarity(embedding1, embedding2):
     return cosine_similarity(embedding1, embedding2)[0][0]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Load pre-trained BERT model and tokenizer
-    tokenizer = BertTokenizer.from_pretrained('bert-large-cased')
-    model = BertModel.from_pretrained('bert-large-cased')
+    tokenizer = BertTokenizer.from_pretrained("bert-large-cased")
+    model = BertModel.from_pretrained("bert-large-cased")
 
     for record in sentence_test:
         # Sample data
-        question_text = record['question']
-        answer_texts = record['choice_list']
+        question_text = record["question"]
+        answer_texts = record["choice_list"]
 
         # Get question embedding
         question_embedding = get_bert_embeddings(question_text, model, tokenizer)
@@ -42,20 +42,22 @@ if __name__ == '__main__':
         # Calculate cosine similarity for each answer
         for i, answer_text in enumerate(answer_texts):
             answer_embedding = get_bert_embeddings(answer_text, model, tokenizer)
-            similarity_score = calculate_cosine_similarity(question_embedding, answer_embedding)
+            similarity_score = calculate_cosine_similarity(
+                question_embedding, answer_embedding
+            )
 
             # Update max_similarity_score and max_similarity_index if the current score is higher
             if similarity_score > max_similarity_score:
                 max_similarity_score = similarity_score
                 max_similarity_index = i
 
-        with open('data/answer_sen.txt', 'w') as file:
+        with open("data/answer_sen.txt", "w") as file:
             file.write(str(max_similarity_index))
 
     for record in word_test:
         # Sample data
-        question_text = record['question']
-        answer_texts = record['choice_list']
+        question_text = record["question"]
+        answer_texts = record["choice_list"]
 
         # Get question embedding
         question_embedding = get_bert_embeddings(question_text, model, tokenizer)
@@ -67,12 +69,14 @@ if __name__ == '__main__':
         # Calculate cosine similarity for each answer
         for i, answer_text in enumerate(answer_texts):
             answer_embedding = get_bert_embeddings(answer_text, model, tokenizer)
-            similarity_score = calculate_cosine_similarity(question_embedding, answer_embedding)
+            similarity_score = calculate_cosine_similarity(
+                question_embedding, answer_embedding
+            )
 
             # Update max_similarity_score and max_similarity_index if the current score is higher
             if similarity_score > max_similarity_score:
                 max_similarity_score = similarity_score
                 max_similarity_index = i
 
-        with open('data/answer_word.txt', 'w') as file:
+        with open("data/answer_word.txt", "w") as file:
             file.write(str(max_similarity_index))

@@ -38,6 +38,10 @@ class SimplePOSTagger:
         return potential_objects
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pos = SimplePOSTagger()
-    print(pos.filter_objects("Mr. and Mrs. Mustard have six daughters and each daughter has one brother. But there are only 9 people in the family, how is that possible?"))
+    print(
+        pos.filter_objects(
+            "Mr. and Mrs. Mustard have six daughters and each daughter has one brother. But there are only 9 people in the family, how is that possible?"
+        )
+    )

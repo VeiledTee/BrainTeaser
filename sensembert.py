@@ -48,7 +48,9 @@ class BrainTeaserWSD:
             senseEmbeddings[senseLabel] = embedding
             currline = f.readline().strip()
 
-    def convert_SenseEmBERT_text_to_json(self, text_load_file: str, json_save_file: str) -> None:
+    def convert_SenseEmBERT_text_to_json(
+        self, text_load_file: str, json_save_file: str
+    ) -> None:
         """
         Convert SenseEmBERT text file to JSON format.
 
@@ -58,7 +60,7 @@ class BrainTeaserWSD:
         # Check if the JSON file already exists
         if os.path.exists(json_save_file):
             # If it exists, load existing data
-            with open(json_save_file, 'r') as existing_json:
+            with open(json_save_file, "r") as existing_json:
                 sense_embeddings: dict[str, list[float]] = json.load(existing_json)
         else:
             # If it doesn't exist, initialize an empty dictionary
@@ -96,8 +98,12 @@ class BrainTeaserWSD:
 
     def find_target_in_bert_tokeinzed_text(self, tokenized_text, non_white_chars_count):
         numChars = 0
-        targetPos = [i for i, token in enumerate(tokenized_text) if
-                     (numChars := numChars + len(token.replace("##", ""))) >= non_white_chars_count]
+        targetPos = [
+            i
+            for i, token in enumerate(tokenized_text)
+            if (numChars := numChars + len(token.replace("##", "")))
+            >= non_white_chars_count
+        ]
         return targetPos
 
     def find_similar_senses(self, token_embedding_in, sense_embeddings, lemma, top_k=1):
@@ -111,7 +117,7 @@ class BrainTeaserWSD:
             currSenseEmbedding = sense_embeddings[currSense]
 
             currSim = dot(tokenEmbedding, currSenseEmbedding) / (
-                    norm(tokenEmbedding) * norm(currSenseEmbedding)
+                norm(tokenEmbedding) * norm(currSenseEmbedding)
             )  # Cosine similarity
 
             # Store the current sense and its similarity in the top_k_senses list
@@ -123,14 +129,20 @@ class BrainTeaserWSD:
         return top_k_senses
 
     def get_bert_token_embedding(self, text, target_token) -> np.ndarray:
-        sentence_tokens = self.tokenizer.tokenize(self.tokenizer.decode(self.tokenizer.encode(text)))
-        target_tokens = self.tokenizer.tokenize(self.tokenizer.decode(self.tokenizer.encode(target_token)))
+        sentence_tokens = self.tokenizer.tokenize(
+            self.tokenizer.decode(self.tokenizer.encode(text))
+        )
+        target_tokens = self.tokenizer.tokenize(
+            self.tokenizer.decode(self.tokenizer.encode(target_token))
+        )
 
-        tokens_to_remove = {'[CLS]', '[SEP]'}
-        target_tokens = [token for token in target_tokens if token not in tokens_to_remove]
+        tokens_to_remove = {"[CLS]", "[SEP]"}
+        target_tokens = [
+            token for token in target_tokens if token not in tokens_to_remove
+        ]
 
         # Convert tokens to input IDs
-        input_ids = self.tokenizer.encode(text, return_tensors='pt')
+        input_ids = self.tokenizer.encode(text, return_tensors="pt")
 
         # Get the model's output
         with torch.no_grad():
@@ -145,10 +157,10 @@ class BrainTeaserWSD:
         # Slide a window over the larger list
         window_size = len(target_tokens)
         for i in range(len(sentence_tokens) - window_size + 1):
-            window_tokens = sentence_tokens[i:i + window_size]
+            window_tokens = sentence_tokens[i : i + window_size]
             if window_tokens == target_tokens:
                 # If the window matches the smaller list, set the mask to True for those tokens
-                mask[i:i + window_size] = [True] * window_size
+                mask[i : i + window_size] = [True] * window_size
 
         # Calculate the mean subtoken embeddings for tokens related to the target_token
         token_embedding = torch.mean(subtoken_embeddings[mask], dim=0)
@@ -157,14 +169,17 @@ class BrainTeaserWSD:
     def predict_sense(self, text, lemma, k):
         target_token_embedding = self.get_bert_token_embedding(text, lemma)
         formated_target_embedding = torch.cat(
-            (torch.tensor(target_token_embedding), torch.tensor(target_token_embedding)), dim=0
+            (
+                torch.tensor(target_token_embedding),
+                torch.tensor(target_token_embedding),
+            ),
+            dim=0,
         )
 
         most_similar_senses = self.find_similar_senses(
             formated_target_embedding, self.sense_embeddings, lemma, k
         )
         return most_similar_senses
-
 
     def pos_tag_text(self, text: str) -> str:
         a = self.model
