@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     print(sentence_train[0])
     print(sentence_eval[0])
-    print(sentence_test[0])
+    print(len(sentence_test))
 
     print(word_train[0])
     print(word_eval[0])
