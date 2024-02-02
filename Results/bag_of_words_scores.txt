@@ -1,0 +1,16 @@
+answer_sen.txt found
+answer_word.txt found
+S_ori:0.425
+S_sem:0.4
+S_con:0.475
+S_ori_sem:0.35
+S_ori_sem_con:0.2
+S_overall:0.43333333333333335
+
+W_ori:0.40625
+W_sem:0.21875
+W_con:0.34375
+W_ori_sem:0.125
+W_ori_sem_con:0.0625
+W_overall:0.3229166666666667
+
