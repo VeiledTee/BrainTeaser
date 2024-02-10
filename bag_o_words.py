@@ -44,8 +44,8 @@ def calculate_avg_overlap(bag1, bag2):
 
 if __name__ == "__main__":
     for dataset, save_file in [
-        (load_dataset("data/SP_new_test.npy"), "data/test_a.txt"),
-        (load_dataset("data/WP_new_test.npy"), "data/test_w.txt"),
+        (load_dataset("data/SP_new_test.npy"), "data/answer_sen.txt"),
+        (load_dataset("data/WP_new_test.npy"), "data/answer_word.txt"),
     ]:
         wsd_unsupervised = BrainTeaserWSD()
         pos_unsupervised = SimplePOSTagger()
