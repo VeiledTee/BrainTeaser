@@ -42,8 +42,6 @@ def average_cosine_similarity(list1, list2):
     return average_similarity
 
 
-# ... (imports and setup code)
-
 def get_sense_embeddings(text, lemmatizer, wsd_model, model, tokenizer):
     objects = lemmatizer.filter_objects(text)
     sense_embeddings = []
@@ -58,45 +56,44 @@ def get_sense_embeddings(text, lemmatizer, wsd_model, model, tokenizer):
 
 
 if __name__ == '__main__':
-    # dataset = load_dataset('data/SP_new_test.npy')
-    # save_file = 'data/answer_sen.txt'
-    dataset = load_dataset('data/WP_new_test.npy')
-    save_file = 'data/answer_word.txt'
+    for dataset, save_file in [
+        (load_dataset("data/SP_new_test.npy"), "data/answer_sen.txt"),
+        (load_dataset("data/WP_new_test.npy"), "data/answer_word.txt"),
+    ]:
+        wsd_comparison = BrainTeaserWSD()
+        pos_comparison = SimplePOSTagger()
 
-    wsd_comparison = BrainTeaserWSD()
-    pos_comparison = SimplePOSTagger()
+        bert_tokenizer = BertTokenizer.from_pretrained('bert-large-cased')
+        bert_model = BertModel.from_pretrained('bert-large-cased')
 
-    bert_tokenizer = BertTokenizer.from_pretrained('bert-large-cased')
-    bert_model = BertModel.from_pretrained('bert-large-cased')
+        # wsd_comparison.convert_SenseEmBERT_text_to_json('data/sensembert_EN_kb.txt', 'data/sensembert_EN_kb.json')
+        wsd_comparison.load_sense_embeddings('data/sensembert_EN_kb.json')
 
-    # wsd_comparison.convert_SenseEmBERT_text_to_json('data/sensembert_EN_kb.txt', 'data/sensembert_EN_kb.json')
-    wsd_comparison.load_sense_embeddings('data/sensembert_EN_kb.json')
+        with open(save_file, 'a') as file:
+            for i, record in enumerate(dataset):
+                print(f"{i + 1} / {len(dataset)}")
+                question_text = record['question']
+                answer_texts = record['choice_list']
 
-    with open(save_file, 'a') as file:
-        for i, record in enumerate(dataset):
-            print(f"{i + 1} / {len(dataset)}")
-            question_text = record['question']
-            answer_texts = record['choice_list']
-
-            question_objects, question_sense_embeddings = get_sense_embeddings(
-                question_text, pos_comparison, wsd_comparison, bert_model, bert_tokenizer
-            )
-
-            max_comparison_score = -1
-            max_comparison_index = -1
-
-            for j, answer_text in enumerate(answer_texts):
-                answer_objects, answer_sense_embeddings = get_sense_embeddings(
-                    answer_text, pos_comparison, wsd_comparison, bert_model, bert_tokenizer
+                question_objects, question_sense_embeddings = get_sense_embeddings(
+                    question_text, pos_comparison, wsd_comparison, bert_model, bert_tokenizer
                 )
 
-                comparison_score = average_cosine_similarity(question_sense_embeddings, answer_sense_embeddings)
+                max_comparison_score = -1
+                max_comparison_index = -1
 
-                if max_comparison_score < comparison_score:
-                    max_comparison_score = comparison_score
-                    max_comparison_index = j
+                for j, answer_text in enumerate(answer_texts):
+                    answer_objects, answer_sense_embeddings = get_sense_embeddings(
+                        answer_text, pos_comparison, wsd_comparison, bert_model, bert_tokenizer
+                    )
 
-            if i+1 < len(dataset):
-                file.write(str(max_comparison_index) + '\n')
-            else:
-                file.write(str(max_comparison_index))
+                    comparison_score = average_cosine_similarity(question_sense_embeddings, answer_sense_embeddings)
+
+                    if max_comparison_score < comparison_score:
+                        max_comparison_score = comparison_score
+                        max_comparison_index = j
+
+                if i+1 < len(dataset):
+                    file.write(str(max_comparison_index) + '\n')
+                else:
+                    file.write(str(max_comparison_index))

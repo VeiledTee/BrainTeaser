@@ -1,20 +1,29 @@
-import json
+"""
+Adapted from code provided by Dr. Milton King
+"""
 
-import nltk
-import numpy as np
-from nltk.corpus import wordnet
-import torch
-from transformers import BertTokenizer, BertModel
-from POSTagging import SimplePOSTagger
-import argparse
-import sys, os
-import torch
-import json
 import copy
-import time
+import json
+import os
+from heapq import nlargest
+
+import numpy as np
+import torch
+from nltk.corpus import wordnet
 from numpy import dot
 from numpy.linalg import norm
-from heapq import nlargest
+from transformers import BertTokenizer, BertModel
+from nltk.corpus import wordnet as wn
+
+
+def get_wordnet_sense(identifier):
+    # Get the synset using the parsed components
+    try:
+        synset = wn.synset_from_sense_key(identifier).definition()
+        return synset
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 
 class BrainTeaserWSD:

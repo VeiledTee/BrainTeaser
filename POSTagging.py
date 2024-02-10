@@ -1,4 +1,3 @@
-import nltk
 from nltk.tag import StanfordPOSTagger
 from nltk.tokenize import word_tokenize
 

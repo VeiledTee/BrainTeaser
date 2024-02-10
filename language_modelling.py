@@ -26,34 +26,33 @@ def calculate_probabilities(sentence1, sentence2, model, tokenizer):
 
 
 if __name__ == '__main__':
-    # dataset = load_dataset('data/SP_new_test.npy')
-    # save_file = 'data/answer_sen.txt'
-    dataset = load_dataset('data/WP_new_test.npy')
-    save_file = 'data/answer_word.txt'
+    for dataset, save_file in [
+        (load_dataset("data/SP_new_test.npy"), "data/answer_sen.txt"),
+        (load_dataset("data/WP_new_test.npy"), "data/answer_word.txt"),
+    ]:
+        wsd_comparison = BrainTeaserWSD()
+        pos_comparison = SimplePOSTagger()
 
-    wsd_comparison = BrainTeaserWSD()
-    pos_comparison = SimplePOSTagger()
+        bert_tokenizer = BertTokenizer.from_pretrained('bert-large-cased')
+        bert_model = BertModel.from_pretrained('bert-large-cased')
 
-    bert_tokenizer = BertTokenizer.from_pretrained('bert-large-cased')
-    bert_model = BertModel.from_pretrained('bert-large-cased')
+        with open(save_file, 'a') as file:
+            for i, record in enumerate(dataset):
+                print(f"{i + 1} / {len(dataset)}")
+                question_text = record['question']
+                answer_texts = record['choice_list']
 
-    with open(save_file, 'a') as file:
-        for i, record in enumerate(dataset):
-            print(f"{i + 1} / {len(dataset)}")
-            question_text = record['question']
-            answer_texts = record['choice_list']
+                max_lm_probability = -1
+                max_lm_index = -1
 
-            max_lm_probability = -1
-            max_lm_index = -1
+                for j, ending in enumerate(answer_texts):
+                    probability = calculate_probabilities(question_text, answer_texts, bert_model, bert_tokenizer)
 
-            for j, ending in enumerate(answer_texts):
-                probability = calculate_probabilities(question_text, answer_texts, bert_model, bert_tokenizer)
+                    if max_lm_probability < probability:
+                        max_lm_probability = probability
+                        max_lm_index = j
 
-                if max_lm_probability < probability:
-                    max_lm_probability = probability
-                    max_lm_index = j
-
-            if i + 1 < len(dataset):
-                file.write(str(max_lm_index) + '\n')
-            else:
-                file.write(str(max_lm_index))
+                if i + 1 < len(dataset):
+                    file.write(str(max_lm_index) + '\n')
+                else:
+                    file.write(str(max_lm_index))

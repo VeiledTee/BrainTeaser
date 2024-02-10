@@ -2,10 +2,9 @@ from typing import Any
 
 from nltk.corpus import stopwords
 
-import wsd
 from POSTagging import SimplePOSTagger
 from dataset_tomfoolery import load_dataset
-from sensembert import BrainTeaserWSD
+from sensembert import BrainTeaserWSD, get_wordnet_sense
 
 # set of English stop words
 stop_words = set(stopwords.words("english"))
@@ -13,38 +12,40 @@ stop_words = set(stopwords.words("english"))
 
 def create_corpus(
     phrase, wsd_model: BrainTeaserWSD, pos_model: SimplePOSTagger
-) -> list[list[Any]]:
+) -> list[str]:
     phrase_senses = []
     answer_objects = set(pos_model.filter_objects(phrase))
     for token in answer_objects:  # get each noun/verb from answer
         sense = wsd_model.predict_sense(phrase, token, 1)
         # find wordnet senses for answer
-        phrase_senses.append(
-            [wsd.get_wordnet_sense(wordnet_sense) for wordnet_sense, _ in sense]
-        )
-
+        if sense:
+            phrase_senses.append(get_wordnet_sense(sense[0][0]))
+        else:
+            phrase_senses.extend('')
     return phrase_senses
 
 
 def create_bag_of_words(corpus):
     bag_of_words = set()
-    for document in corpus:
-        # Remove stop words and duplicates
-        words = [word.lower() for word in document if word.lower() not in stop_words]
-        bag_of_words.update(words)
+    for sentence in corpus:
+        words = sentence.split()
+        for word in words:
+            word = word.strip('.,!?;:()[]{}')
+            if word.lower() not in stop_words:
+                bag_of_words.add(word.lower())
     return list(bag_of_words)
 
 
 def calculate_avg_overlap(bag1, bag2):
     common_words = set(bag1) & set(bag2)
-    avg_overlap = len(common_words) / (len(bag1) + len(bag2)) / 2
+    avg_overlap = (2 * len(common_words)) / (len(bag1) + len(bag2))
     return avg_overlap
 
 
 if __name__ == "__main__":
     for dataset, save_file in [
-        (load_dataset("data/SP_new_test.npy"), "data/answer_sen.txt"),
-        (load_dataset("data/WP_new_test.npy"), "data/answer_word.txt"),
+        (load_dataset("data/SP_new_test.npy"), "data/test_a.txt"),
+        (load_dataset("data/WP_new_test.npy"), "data/test_w.txt"),
     ]:
         wsd_unsupervised = BrainTeaserWSD()
         pos_unsupervised = SimplePOSTagger()
